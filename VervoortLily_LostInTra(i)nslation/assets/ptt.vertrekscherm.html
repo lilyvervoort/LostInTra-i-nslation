@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vertrektijden — Neon Stationsbord</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --text:#f0f0f0;
+  --accent:#FF8C00;
+  --status-red:#e63946;
+  --header-bg:linear-gradient(90deg,#252b66,#181b4a);
+  --row-bg:rgba(255,255,255,0.03);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body {
+  margin:0; padding:0;
+  width:100%; height:100%;
+  font-family:'Roboto Condensed',sans-serif;
+  background:radial-gradient(circle at top,#151A4A 0%,#0e0f30 80%);
+  color: var(--text);
+  display:flex; justify-content:center; align-items:center;
+  overflow:hidden;
+}
+
+body::after {
+  content:"";
+  position:fixed;
+  top:0; left:0; width:100%; height:100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.02) 0px,
+    rgba(255,255,255,0.02) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events:none;
+}
+
+.screen {
+  display:flex; flex-direction:column;
+  width:100%; height:100vh;
+  padding:2vh 2vw;
+  gap:1.5vh;
+}
+
+/* Header */
+.header {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background: var(--header-bg);
+  border-radius:1.2vh;
+  padding:1.5vh 2vw;
+  box-shadow:0 0.8vh 2vh rgba(255,140,0,0.25);
+  flex-shrink:0;
+}
+
+.header-left {
+  display:flex; gap:1.5vh; align-items:flex-start;
+  margin-left:0;
+  padding-left:0.5vw;
+}
+
+.header-right {
+  display:flex;
+  align-items:center;
+  gap:1vw;
+  justify-content:flex-end;
+  height:100%;
+}
+
+.header-icon {
+  font-size:11.2vh;
+  color: var(--accent);
+  text-shadow: 0 0 1.5vh rgba(255,140,0,0.8), 0 0 3vh rgba(255,140,0,0.5);
+  margin-top: 0.1vh;
+}
+
+.header-text h1 {
+  margin:0; font-family:Garamond,serif;
+  font-size:4vh; color: var(--accent);
+  text-shadow:0 0 0.8vh rgba(255,140,0,0.9),0 0 1.5vh rgba(255,140,0,0.6);
+  text-transform: uppercase;
+}
+
+.header-text .translations {
+  font-size:1.6vh;
+  color:#f0f0f0;
+  opacity:0.8;
+  line-height:1.1;
+  margin-top:0.2vh;
+}
+
+.header-text h2 {
+  margin:3px 0 0; font-size:2.5vh; color:#f0f0f0;
+  text-shadow:0 0 0.6vh rgba(255,140,0,0.6);
+  font-style:italic;
+}
+
+/* Clock */
+.clock-icon {
+  font-size:4vh; color: var(--accent);
+  text-shadow:0 0 1vh rgba(255,140,0,0.8),0 0 2vh rgba(255,140,0,0.5);
+}
+
+.clock {
+  font-size:4.5vh; font-weight:bold;
+  color: var(--accent);
+  text-shadow:0 0 1vh rgba(255,140,0,0.9),0 0 2vh rgba(255,140,0,0.6);
+  animation: neonGlow 2s infinite alternate;
+}
+
+/* Table labels and rows */
+.table-labels,
+.table-row {
+  display:grid;
+  grid-template-columns: 10vw 15vw 45vw 10vw auto;
+  align-items:center;
+  width:100%;
+}
+
+.table-labels > div {
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0.5vh 0.5vw;
+}
+
+.table-labels > div .translation {
+  margin-left: 0; /* uitlijning zoals bij Tijd en Trein */
+}
+
+.table-labels .translation {
+  font-size:1.2vh;
+  opacity:0.7;
+  line-height:1.1;
+}
+
+/* Columns alignment */
+.table-labels > div:nth-child(1),
+.table-row > div:nth-child(1) { text-align: left; padding-left: 0.5vw; }
+.table-labels > div:nth-child(2),
+.table-row > div:nth-child(2) { text-align: left; }
+.table-labels > div:nth-child(3),
+.table-row > div:nth-child(3) { text-align: left; }
+.table-labels > div:nth-child(4),
+.table-row > div:nth-child(4) { text-align: center; }
+.table-labels > div:nth-child(5),
+.table-row > div:nth-child(5) { text-align: right; padding-right: 0.5vw; }
+
+/* Table rows */
+.table {
+  display:flex; flex-direction:column; flex:1;
+  gap:1vh;
+  width:100%;
+}
+
+.table-row {
+  display:grid;
+  grid-template-columns: 10vw 15vw 45vw 10vw auto;
+  align-items:center;
+  gap:0;
+  background: var(--row-bg);
+  box-shadow: inset 0 0 2vh rgba(255,140,0,0.05);
+  border-radius:1vh;
+  padding:0.5vh 0.5vw;
+  transition: opacity 0.3s ease;
+  font-size:2.5vh;
+  flex:1;
+}
+
+.table-row.cancelled {
+  background-color: rgba(230,57,70,0.15);
+  box-shadow: inset 0 0 2vh rgba(230,57,70,0.2);
+  animation: pulse 1.2s infinite;
+}
+
+.time { font-weight:bold; color: var(--accent); text-shadow:0 0 0.8vh rgba(255,140,0,0.7); animation: neonGlowTime 2s infinite alternate; }
+.train, .destination { font-weight:bold; color:#f0f0f0; }
+.status { font-weight:bold; color: var(--accent); text-align:right; }
+.status.cancelled { color: var(--status-red); }
+.platform {
+  display:flex; justify-content:center; align-items:center;
+  font-weight:bold;
+  color:#FF8C00;
+  border:0.2vh solid #FF8C00;
+  border-radius:0.5vh;
+  background: rgba(255,140,0,0.05);
+  min-width:5vw;
+  height:70%;
+  margin:0 auto;
+  text-align:center;
+}
+
+/* Animations */
+@keyframes neonGlow { 0% { text-shadow: 0 0 1vh rgba(255,140,0,0.9), 0 0 2vh rgba(255,140,0,0.6); } 100% { text-shadow: 0 0 2vh rgba(255,140,0,1), 0 0 3vh rgba(255,140,0,0.8); } }
+@keyframes neonGlowTime { 0% { text-shadow: 0 0 1vh rgba(255,140,0,0.9), 0 0 2vh rgba(255,140,0,0.6); } 100% { text-shadow: 0 0 2vh rgba(255,140,0,1), 0 0 3vh rgba(255,140,0,0.8); } }
+@keyframes pulse { 0%,100% { box-shadow: inset 0 0 2vh rgba(230,57,70,0.2); } 50% { box-shadow: inset 0 0 2vh rgba(230,57,70,0.5); } }
+
+</style>
+</head>
+<body>
+
+<div class="screen">
+  <div class="header">
+    <div class="header-left">
+      <i class="fa-solid fa-train header-icon"></i>
+      <div class="header-text">
+        <h1>VERTREK</h1>
+        <div class="translations">
+          Départ (FR) | Abfahrt (DE) | Departure (EN)
+        </div>
+        <h2>Antwerpen-Centraal</h2>
+        <div class="translations">
+          Anvers-Central (FR) | Antwerpen-Zentral (DE) | Antwerp Central (EN)
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <i class="fa-solid fa-clock clock-icon"></i>
+      <div class="clock" id="clock">00:00:00</div>
+    </div>
+  </div>
+
+  <div class="table-labels">
+    <div>
+      Tijd
+      <div class="translation">Heure (FR)<br>Zeit (DE)<br>Time (EN)</div>
+    </div>
+    <div>
+      Trein
+      <div class="translation">Train (FR)<br>Zug (DE)<br>Train (EN)</div>
+    </div>
+    <div>
+      Bestemming
+      <div class="translation">Destination (FR)<br>Ziel (DE)<br>Destination (EN)</div>
+    </div>
+    <div>
+      Perron
+      <div class="translation">Quai (FR)<br>Bahnsteig (DE)<br>Platform (EN)</div>
+    </div>
+    <div>
+      Status
+      <div class="translation">Statut (FR)<br>Status (DE)<br>Status (EN)</div>
+    </div>
+  </div>
+
+  <div class="table" id="table"></div>
+</div>
+
+<script>
+const rows = [
+  ["15:25","IC 750","Brussel-Zuid","5",""],
+  ["15:40","S1","Mechelen","3",""],
+  ["15:50","IC 900","Gent-Sint-Pieters","7","+2 min"],
+  ["16:00","S4","Hasselt","2",""],
+  ["16:12","IC 730","Brussel-Noord","4",""],
+  ["16:20","S32","Puurs","1","Geannuleerd"],
+  ["16:33","IC 812","Luik-Guillemins","6","+3 min"],
+  ["16:45","S2","Leuven","8",""],
+  ["16:55","IC 865","Brussel-Zuid","5",""],
+  ["17:10","S6","Lier","3",""]
+];
+
+const table = document.getElementById("table");
+rows.forEach(([time, train, destination, platform, status]) => {
+  const row = document.createElement("div");
+  row.className="table-row";
+  let statusClass="status";
+  const isCancelled = status.toLowerCase().includes("geannuleerd") || status.toLowerCase().includes("cancelled");
+  if(isCancelled){ 
+    row.classList.add("cancelled"); 
+    statusClass += " cancelled"; 
+  }
+  const showStatus = isCancelled || /^\+\d+\s*min$/.test(status.trim());
+
+  let statusContent = '';
+  if(showStatus){
+    // Voeg rood kruis toe bij geannuleerd
+    if(isCancelled){
+      statusContent = `<span style="color:#e63946; margin-right:0.5vw;">&#10060;</span>${status}`;
+    } else {
+      statusContent = status;
+    }
+  }
+
+  row.innerHTML = `
+    <div class="time">${time}</div>
+    <div class="train">${train}</div>
+    <div class="destination">${destination}</div>
+    <div class="platform">${platform}</div>
+    <div class="${statusClass}">${statusContent}</div>
+  `;
+  table.appendChild(row);
+});
+
+function updateClock(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+}
+setInterval(updateClock,1000);
+updateClock();
+</script>
+
+</body>
+</html>

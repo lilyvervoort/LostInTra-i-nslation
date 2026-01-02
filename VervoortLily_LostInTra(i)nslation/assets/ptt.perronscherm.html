@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Station Vertrektijden — NMBS Orange Glow</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --text:#f0f0f0;
+  --accent-yellow:#FF8C00;
+  --status-red:#e63946;
+  --header-bg:linear-gradient(90deg,#252b66,#181b4a);
+  --row-bg:rgba(255,255,255,0.03);
+}
+
+html, body {
+  margin:0; padding:0;
+  width:100vw; height:100vh;
+  font-family:'Roboto Condensed',sans-serif;
+  background:radial-gradient(circle at top,#151A4A 0%,#0e0f30 80%);
+  color: var(--text);
+  display:flex; justify-content:center; align-items:center;
+}
+
+body::after {
+  content:"";
+  position:fixed;
+  top:0; left:0; width:100%; height:100%;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.02) 0px,
+    rgba(255,255,255,0.02) 2px,
+    transparent 2px,
+    transparent 4px
+  );
+  pointer-events:none;
+}
+
+.screen {
+  display:flex; flex-direction:column;
+  width:80%; height:100vh;
+  max-width:600px;
+}
+
+.header {
+  display:flex; 
+  justify-content:space-between; 
+  align-items:flex-end; 
+  background: var(--header-bg);
+  border-radius:1.5vh;
+  padding:2vh 2vw;
+  box-shadow:0 0.8vh 2vh rgba(255,140,0,0.25);
+}
+
+.header-left {
+  display: flex;
+  gap: 2vh;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.header-icon {
+  font-size:8vh; 
+  color: var(--accent-yellow);
+  text-shadow: 0 0 1.4vh rgba(255,140,0,0.8), 0 0 3vh rgba(255,140,0,0.5);
+  display: flex;
+  align-items: flex-end;
+}
+
+.header-text {
+  display:flex; flex-direction:column; justify-content:flex-start;
+}
+
+.header-text h1 {
+  margin:0; font-family:Garamond,serif;
+  font-size:5vh;
+  color: var(--accent-yellow);
+  text-shadow:0 0 1vh rgba(255,140,0,0.9),0 0 2.2vh rgba(255,140,0,0.6);
+  text-transform: uppercase;
+}
+
+.header-text h2 {
+  margin:5px 0 0; font-size:2.8vh;
+  font-style:italic; color:#f0f0f0;
+  text-shadow:0 0 0.8vh rgba(255,140,0,0.6);
+  height:3vh;
+}
+
+.nr-box {
+  font-size:2.8vh; font-weight:bold;
+  width: 8vh; 
+  height: 8vh;
+  padding:0;
+  border-radius:1vh;
+  background: var(--accent-yellow); color:#0b0d22;
+  display:flex; justify-content:center; align-items:center;
+  box-shadow:0 0 1.6vh rgba(255,140,0,0.8);
+  margin-left:auto;
+}
+
+.table {
+  flex:1;
+  display:flex; 
+  flex-direction:column;
+  justify-content:stretch;
+  overflow:hidden;
+  width:100%;
+  max-width:600px;
+  box-sizing:border-box;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 12vw 1fr 1fr 8vw;
+  align-items: center;
+  gap:0;
+  background: var(--row-bg);
+  box-shadow: inset 0 0 2vh rgba(255,140,0,0.05);
+  margin:0;
+  border-radius:1vh;
+  overflow:hidden;
+  flex-grow:1;
+  padding:1vh 0;
+  opacity:1;
+  transition: opacity 0.3s ease;
+}
+
+.table-row > div {
+  display:flex; 
+  flex-direction:column;
+  padding-left:0.5vw;
+  padding-right:0.5vw;
+  box-sizing:border-box;
+}
+
+.table-row > div.time {
+  justify-content:center;
+  align-items:center;
+}
+
+.time {
+  font-size:2.5vh; font-weight:bold; text-align:center; color: var(--accent-yellow);
+  text-shadow:0 0 0.8vh rgba(255,140,0,0.7);
+}
+
+.train {
+  position: relative;
+  left: 33.33%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 2.2vh;
+  font-weight: bold;
+  color: #f0f0f0;
+}
+
+.destination {
+  font-size:2vh; font-weight:bold; white-space:nowrap; 
+  margin-bottom:0.2vh;
+}
+
+.subtext-container {
+  overflow:hidden;
+  position:relative;
+  width:100%;
+  height:1.5vh;
+}
+
+.subtext {
+  display:inline-block;
+  white-space: nowrap;
+  font-size:1.5vh;
+  color:#f0f0f0;
+  position:absolute;
+}
+
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.status {
+  font-size:2vh;
+  font-weight:bold;
+  display:flex;
+  justify-content:flex-end;
+  align-items:center;
+  color: var(--accent-yellow);
+}
+
+.status.cancelled {
+  color: var(--status-red);
+}
+
+.table-row.cancelled {
+  background-color: rgba(230,57,70,0.15);
+  box-shadow: inset 0 0 2vh rgba(230,57,70,0.2);
+}
+
+.language-bar {
+  display:flex; width:100%; height:10%;
+  margin-top:0.5vh;
+}
+
+.language {
+  flex:1; text-align:center; font-weight:bold; font-size:2.5vh;
+  line-height:10vh; cursor:pointer; color:#f0f0f0;
+  text-shadow:0 0 0.6vh rgba(255,140,0,0.6); transition: filter 0.2s;
+}
+
+.language.active { outline:0.3vh solid var(--accent-yellow); }
+.language:hover { filter:brightness(1.2); }
+
+</style>
+</head>
+<body>
+
+<div class="screen">
+  <div class="header">
+    <div class="header-left">
+      <i class="fa-solid fa-train header-icon"></i>
+      <div class="header-text">
+        <h1 id="title">VERTREKKEN</h1>
+        <h2 id="station">Antwerpen-Centraal</h2>
+      </div>
+    </div>
+    <div class="nr-box">4</div>
+  </div>
+
+  <div class="table" id="table"></div>
+
+  <div class="language-bar">
+    <div class="language active" onclick="setLanguage('nl')">NL</div>
+    <div class="language" onclick="setLanguage('fr')">FR</div>
+    <div class="language" onclick="setLanguage('en')">EN</div>
+    <div class="language" onclick="setLanguage('de')">DE</div>
+  </div>
+</div>
+
+<script>
+const translations = {
+  nl: {
+    title: "VERTREKKEN",
+    station: "Antwerpen-Centraal",
+    rows: [
+      ["15:22","S32","Puurs","Antwerpen-Berchem – Hoboken-Polder – Hemiksem – Schelle – Niel – Boom – Ruisbroek – Puurs",""],
+      ["15:30","IC 820","Brussel-Zuid","Antwerpen-Berchem – Mortsel-Oude-God – Mechelen-Nekkerspoel – Mechelen – Vilvoorde – Brussel-Zuid","+1 min"],
+      ["15:45","IC 210","Gent-Sint-Pieters","Antwerpen-Berchem – Sint-Niklaas – Lokeren – Dendermonde – Gent-Sint-Pieters",""],
+      ["16:05","IC 825","Brussel-Noord","Mechelen – Brussel-Noord",""],
+      ["16:22","IC 810","Brussel-Zuid","Antwerpen-Berchem – Mortsel-Oude-God – Mechelen-Nekkerspoel – Mechelen – Vilvoorde – Brussel-Zuid",""],
+      ["16:35","S2","Leuven","Antwerpen-Berchem – Mechelen – Vilvoorde – Brussel-Noord – Leuven",""],
+      ["16:45","S32","Puurs","Antwerpen-Berchem – Hoboken-Polder – Hemiksem – Schelle – Niel – Boom – Ruisbroek – Puurs","Geannuleerd"]
+    ]
+  },
+  fr: {
+    title: "DÉPARTS",
+    station: "Anvers-Central",
+    rows: [
+      ["15:22","S32","Puurs","Anvers-Berchem – Hoboken-Polder – Hemiksem – Schelle – Niel – Boom – Ruisbroek – Puurs",""],
+      ["15:30","IC 820","Bruxelles-Midi","Anvers-Berchem – Mortsel-Dieu-Vieux – Malines-Nekkerspoel – Malines – Vilvorde – Bruxelles-Midi","+1 min"],
+      ["15:45","IC 210","Gand-Saint-Pierre","Anvers-Berchem – Saint-Nicolas – Lokeren – Termonde – Gand-Saint-Pierre",""],
+      ["16:05","IC 825","Bruxelles-Nord","Malines – Bruxelles-Nord",""],
+      ["16:22","IC 810","Bruxelles-Midi","Anvers-Berchem – Mortsel-Dieu-Vieux – Malines-Nekkerspoel – Malines – Vilvorde – Bruxelles-Midi",""],
+      ["16:35","S2","Louvain","Anvers-Berchem – Malines – Vilvorde – Bruxelles-Nord – Louvain",""],
+      ["16:45","S32","Puurs","Anvers-Berchem – Hoboken-Polder – Hemiksem – Schelle – Niel – Boom – Ruisbroek – Puurs","Annulé"]
+    ]
+  },
+  en: {
+    title: "DEPARTURES",
+    station: "Antwerp-Central",
+    rows: [
+      ["15:22","S32","Puurs","Antwerp-Berchem – Hoboken-Polder – Hemiksem – Schelle – Niel – Boom – Ruisbroek – Puurs",""],
+      ["15:30","IC 820","Brussels-South","Antwerp-Berchem – Mortsel-Old-God – Mechelen-Nekkerspoel – Mechelen – Vilvoorde – Brussels-South","+1 min"],
+      ["15:45","IC 210","Ghent-Saint-Peter","Antwerp-Berchem – Sint-Niklaas – Lokeren – Dendermonde – Ghent-Saint-Peter",""],
+      ["16:05","IC 825","Brussels-North","Mechelen – Brussels-North",""],
+      ["16:22","IC 810","Brussels-South","Antwerp-Berchem – Mortsel-Old-God – Mechelen-Nekkerspoel – Mechelen – Vilvoorde – Brussels-South",""],
+      ["16:35","S2","Leuven","Antwerp-Berchem – Mechelen – Vilvoorde – Brussels-North – Leuven",""],
+      ["16:45","S32","Puurs","Antwerp-Berchem – Hoboken-Polder – Hemiksem – Schelle – Niel – Boom – Ruisbroek – Puurs","Cancelled"]
+    ]
+  },
+  de: {
+    title: "ABFAHRTEN",
+    station: "Antwerpen-Zentral",
+    rows: [
+      ["15:22","S32","Puurs","Antwerpen-Berchem – Hoboken-Polder – Hemiksem – Schelle – Niel – Boom – Ruisbroek – Puurs",""],
+      ["15:30","IC 820","Brüssel-Süd","Antwerpen-Berchem – Mortsel-Old-God – Mechelen-Nekkerspoel – Mechelen – Vilvorde – Brüssel-Süd","+1 min"],
+      ["15:45","IC 210","Gent-Sint-Pieters","Antwerpen-Berchem – Sint-Niklaas – Lokeren – Dendermonde – Gent-Sint-Pieters",""],
+      ["16:05","IC 825","Brüssel-Nord","Mechelen – Brüssel-Nord",""],
+      ["16:22","IC 810","Brüssel-Süd","Antwerpen-Berchem – Mortsel-Old-God – Mechelen-Nekkerspoel – Mechelen – Vilvorde – Brüssel-Süd",""],
+      ["16:35","S2","Löwen","Antwerpen-Berchem – Mechelen – Vilvorde – Brüssel-Nord – Löwen",""],
+      ["16:45","S32","Puurs","Antwerpen-Berchem – Hoboken-Polder – Hemiksem – Schelle – Niel – Boom – Ruisbroek – Puurs","Abgesagt"]
+    ]
+  }
+};
+
+function setLanguage(lang){
+  const table = document.getElementById("table");
+  const title = document.getElementById("title");
+  const station = document.getElementById("station");
+  const data = translations[lang];
+
+  // Fade-out huidige rijen
+  Array.from(table.children).forEach(row => row.style.opacity = '0');
+
+  setTimeout(()=>{
+    // Update content na fade-out
+    title.textContent = data.title;
+    station.textContent = data.station;
+
+    document.querySelectorAll(".language").forEach(btn => btn.classList.remove("active"));
+    document.querySelector(`.language[onclick="setLanguage('${lang}')"]`).classList.add("active");
+
+    table.innerHTML="";
+    const speed = 30;
+    data.rows.forEach(([time, train, destination, stops, status], index)=>{
+      const row = document.createElement("div");
+      row.className="table-row";
+      let statusClass = "status";
+
+      if(status.toLowerCase().includes("geannuleerd") || status.toLowerCase().includes("annulé") || status.toLowerCase().includes("cancelled") || status.toLowerCase().includes("abgesagt")) {
+          row.classList.add("cancelled");
+          statusClass += " cancelled";
+      }
+
+      const showStatus = 
+          (status && !(/^\+\d+\s*min$/.test(status.trim())) ) || 
+          statusClass.includes("cancelled") || 
+          index === 1;
+
+      row.innerHTML = `
+        <div class="time">${time}</div>
+        <div class="train">${train}</div>
+        <div>
+          <div class="destination">${destination}</div>
+          ${stops ? `<div class="subtext-container"><div class="subtext">${stops} – ${stops}</div></div>` : ''}
+        </div>
+        ${showStatus ? `<div class="${statusClass}">${status}</div>` : ''}`;
+
+      table.appendChild(row);
+
+      if(stops){
+        const subtextContainer = row.querySelector(".subtext-container");
+        const subtext = row.querySelector(".subtext");
+        const textWidth = subtext.scrollWidth / 2;
+        const duration = textWidth / speed;
+        subtext.style.animation = `scroll ${duration}s linear infinite`;
+      }
+
+      // Fade-in nieuwe rij
+      setTimeout(()=>row.style.opacity = '1', 50);
+    });
+  }, 200);
+}
+
+setLanguage("nl");
+</script>
+
+</body>
+</html>
+

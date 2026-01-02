@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Railway Pro</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg: #0b0c22; --surface: #121640; --accent: #FF8C00; --accent-glow: rgba(255, 140, 0, 0.4);
+            --text: #ffffff; --text-dim: #a0a0c0; --red: #ff4d4d; --green: #2ecc71; 
+            --border: rgba(255, 255, 255, 0.15); --glass: rgba(255, 255, 255, 0.08);
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; scroll-behavior: smooth; }
+        body { margin: 0; background-color: var(--bg); color: var(--text); font-family: 'Roboto Condensed', sans-serif; overflow-x: hidden; min-height: 100vh; }
+
+        .app-bar { background: var(--surface); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; border-bottom: 2px solid var(--accent); }
+        .app-bar h1 { margin: 0; font-size: 1.2rem; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+
+        .lang-picker { display: flex; gap: 8px; background: rgba(0,0,0,0.3); padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border); }
+        .lang-btn { font-size: 0.8rem; cursor: pointer; opacity: 0.4; font-weight: bold; }
+        .lang-btn.active { opacity: 1; color: var(--accent); }
+
+        .screen { display: none; padding: 20px; animation: slideUp 0.3s ease-out; padding-bottom: 80px; }
+        .screen.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 18px; margin-bottom: 15px; }
+        .btn { border: none; border-radius: 14px; padding: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; color: white; transition: 0.2s; font-size: 1rem; }
+        .btn-main { background: var(--accent); box-shadow: 0 6px 20px var(--accent-glow); }
+        .btn-outline { background: var(--surface); border: 1px solid var(--border); margin-bottom: 12px; }
+        .btn-back { background: transparent; color: var(--accent); justify-content: flex-start; padding: 10px 0; font-size: 1.2rem; }
+
+        .train-item { background: linear-gradient(145deg, var(--surface), #1a1f55); border-radius: 18px; padding: 20px; margin-bottom: 15px; border: 1px solid var(--border); border-left: 6px solid var(--accent); cursor: pointer; }
+        .time { font-size: 1.8rem; font-weight: 900; color: var(--accent); }
+        .platform-badge { background: var(--accent); color: var(--bg); padding: 4px 14px; border-radius: 8px; font-weight: 900; font-size: 1.2rem; }
+        .destination { font-size: 1.4rem; font-weight: bold; margin: 6px 0; }
+
+        .stops-mini { font-size: 0.8rem; opacity: 0.6; margin: 10px 0; line-height: 1.3; }
+
+        .wagon-scroll { display: flex; gap: 6px; overflow-x: auto; padding: 15px 0; scrollbar-width: none; }
+        .wagon { min-width: 85px; height: 50px; background: #1e2460; border-radius: 6px; border: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+        .wagon.first { border-top: 5px solid var(--accent); }
+        .wagon.bistro { border-top: 5px solid var(--red); }
+        .occ-bar { width: 65%; height: 4px; background: rgba(0,0,0,0.5); margin-top: 6px; border-radius: 3px; overflow: hidden; }
+
+        .platform-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .platform-box { background: var(--surface); border: 1px solid var(--border); border-radius: 15px; padding: 20px 5px; text-align: center; }
+
+        .stop-row { padding: 12px 0; border-left: 3px solid var(--accent); margin-left: 12px; padding-left: 22px; position: relative; font-size: 1.1rem; }
+        .stop-row::before { content: ''; position: absolute; left: -8px; width: 12px; height: 12px; background: var(--bg); border: 3px solid var(--accent); border-radius: 50%; top: 15px; }
+
+        .ticket-option { border: 2px solid var(--border); border-radius: 15px; padding: 15px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .ticket-option.selected { border-color: var(--accent); background: rgba(255,140,0,0.1); }
+        .qr-box { background: white; width: 200px; height: 200px; margin: 20px auto; border-radius: 15px; display: flex; align-items: center; justify-content: center; }
+        
+        input { width: 100%; background: var(--surface); border: 2px solid var(--border); padding: 18px; border-radius: 16px; color: white; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+    <div class="app-bar">
+        <h1>RAILWAY <span style="font-weight:300">PRO</span></h1>
+        <div class="lang-picker">
+            <span class="lang-btn active" onclick="setLang('nl')">NL</span>
+            <span class="lang-btn" onclick="setLang('fr')">FR</span>
+            <span class="lang-btn" onclick="setLang('en')">EN</span>
+        </div>
+    </div>
+
+    <div id="screen-home" class="screen active">
+        <div style="text-align: center; margin: 30px 0;">
+            <p id="txt-station-label" style="text-transform:uppercase; font-size:0.8rem; opacity:0.6; letter-spacing:3px;">Railway Pro</p>
+            <h2 id="station-name" style="font-size: 2.4rem; margin: 5px 0; font-weight: 900;">Antwerpen-Centraal</h2>
+            <div id="clock" style="font-weight: 300; color: var(--accent); font-size: 1.6rem;">00:00:00</div>
+        </div>
+        <button class="btn btn-main" style="margin-bottom:25px;" onclick="nav('planner')"><i class="fa-solid fa-magnifying-glass"></i> <span id="txt-plan">Bestemming Zoeken</span></button>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+            <button class="btn btn-outline" onclick="nav('departures')" style="flex-direction:column; padding:25px;"><i class="fa-solid fa-list-ul" style="font-size:1.8rem; color:var(--accent);"></i><span id="txt-dep">Vertrek</span></button>
+            <button class="btn btn-outline" onclick="nav('platforms')" style="flex-direction:column; padding:25px;"><i class="fa-solid fa-train" style="font-size:1.8rem; color:var(--accent);"></i><span id="txt-plat">Perrons</span></button>
+        </div>
+    </div>
+
+    <div id="screen-planner" class="screen">
+        <button class="btn btn-back" onclick="back()">← Dashboard</button>
+        <h2 id="txt-plan-h">Waar wil je heen?</h2>
+        <input type="text" id="planner-input" placeholder="..." oninput="search()">
+        <div id="planner-results" style="margin-top:20px;"></div>
+    </div>
+
+    <div id="screen-departures" class="screen">
+        <button class="btn btn-back" onclick="back()">← Dashboard</button>
+        <div id="dep-list"></div>
+    </div>
+
+    <div id="screen-platforms" class="screen">
+        <button class="btn btn-back" onclick="back()">← Dashboard</button>
+        <div class="platform-grid" id="plat-grid"></div>
+    </div>
+
+    <div id="screen-plat-detail" class="screen">
+        <button class="btn btn-back" onclick="back()">← Overzicht</button>
+        <h2 id="plat-title">Spoor</h2>
+        <div id="plat-trains"></div>
+    </div>
+
+    <div id="screen-booking" class="screen">
+        <button class="btn btn-back" onclick="back()">← Terug</button>
+        <h2 id="txt-book-h">Kies je ticket</h2>
+        <div class="card" style="border-left:5px solid var(--accent)">
+            <h3 id="book-train-info" style="margin:0;">Trein info</h3>
+            <p id="book-route-info" style="opacity:0.7; margin:5px 0 0 0;"></p>
+        </div>
+        <div class="ticket-option selected" onclick="selectTicket(this, 12.80)">
+            <div><strong>Standard Ticket</strong><br><small>2de Klasse</small></div>
+            <div style="font-size:1.2rem; font-weight:bold; color:var(--accent);">€12.80</div>
+        </div>
+        <div class="ticket-option" onclick="selectTicket(this, 21.00)">
+            <div><strong>First Class</strong><br><small>Comfortabeler reizen</small></div>
+            <div style="font-size:1.2rem; font-weight:bold; color:var(--accent);">€21.00</div>
+        </div>
+        <div class="ticket-option" onclick="selectTicket(this, 6.60)">
+            <div><strong>Youth Ticket</strong><br><small>< 26 jaar</small></div>
+            <div style="font-size:1.2rem; font-weight:bold; color:var(--accent);">€6.60</div>
+        </div>
+        <button class="btn btn-main" style="margin-top:20px;" onclick="confirmBooking()">Betalen & Bevestigen</button>
+    </div>
+
+    <div id="screen-ticket" class="screen">
+        <button class="btn btn-back" onclick="nav('home')">← Dashboard</button>
+        <div class="card" style="text-align:center;">
+            <h2 style="color:var(--green); margin:0;">TICKET GELDIG</h2>
+            <p id="final-ticket-info" style="opacity:0.8;"></p>
+            <div class="qr-box"><i class="fa-solid fa-qrcode" style="font-size:9rem; color:black;"></i></div>
+            <p style="font-family:monospace; opacity:0.5;">ID: ELITE-9923-TR</p>
+        </div>
+        <div class="card">
+            <h3 style="margin:0;">Samenstelling</h3>
+            <div id="det-wagons" class="wagon-scroll"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentLang = 'nl';
+        let navHistory = ['home'];
+        let activeTrain = null;
+
+        const dict = {
+            nl: { station: "Railway Pro", plan: "Bestemming Zoeken", dep: "Vertrektijden", plat: "Perrons", searchH: "Waar wil je heen?", comp: "Samenstelling", ontime: "Op tijd", searchPlaceholder: "Typ halte (bv. Schelle, Gent)..." },
+            fr: { station: "Railway Pro", plan: "Chercher", dep: "Départs", plat: "Quais", searchH: "Où allez-vous ?", comp: "Composition", ontime: "À l'heure", searchPlaceholder: "Arrêt (ex. Schelle)..." },
+            en: { station: "Railway Pro", plan: "Search", dep: "Departures", plat: "Platforms", searchH: "Where to?", comp: "Composition", ontime: "On time", searchPlaceholder: "Stop (e.g. Schelle)..." }
+        };
+
+        const trains = [
+            { tr: "S32 2567", t: "17:35", d: "Puurs", p: "24", s: "", type: "S-Trein", stops: ["Antwerpen-Berchem", "Antwerpen-Zuid", "Hemiksem", "Schelle", "Niel", "Boom", "Puurs"], w: ['2','1','2','2','2','2'] },
+            { tr: "IC 556", t: "17:05", d: "Oostende", p: "3", s: "", type: "IC (M7)", stops: ["Gent-Sint-Pieters", "Brugge", "Oostende"], w: ['2','2','2','1','1','2','2','2','2','Bike'] },
+            { tr: "S1 3450", t: "17:12", d: "Nijvel", p: "4", s: "+5'", type: "S-Trein (Desiro)", stops: ["Mechelen", "Vilvoorde", "Brussel-Noord", "Brussel-Zuid", "Nijvel"], w: ['2','1','2','2','1','2'] },
+            { tr: "THA 9340", t: "17:20", d: "Paris-Nord", p: "21", s: "", type: "THALYS", stops: ["Brussel-Zuid", "Paris-Nord"], w: ['1','1','1','Bistro','2','2','2','2','2','2','2','2'] },
+            { tr: "IC 921", t: "17:35", d: "Amsterdam Centraal", p: "22", s: "", type: "BENELUX", stops: ["Breda", "Rotterdam CS", "Amsterdam Centraal"], w: ['1','1','2','2','2','2','2','2','2','2'] },
+            { tr: "P 8900", t: "17:42", d: "Leuven", p: "6", s: "", type: "P-Trein", stops: ["Lier", "Heist-op-den-Berg", "Aarschot", "Leuven"], w: ['2','2','2','2','1','1','2','2','2','2'] },
+            { tr: "IC 1234", t: "17:45", d: "Brussel-Zuid", p: "5", s: "", type: "IC", stops: ["Mechelen", "Brussel-Noord", "Brussel-Zuid"], w: ['2','2','1','1','2','2','2','2'] },
+            { tr: "L 2859", t: "17:52", d: "Roosendaal", p: "23", s: "", type: "L-Trein", stops: ["Ekeren", "Kapellen", "Heide", "Essen", "Roosendaal"], w: ['2','2','2','2'] },
+            { tr: "ICE 123", t: "18:05", d: "Frankfurt Hbf", p: "2", s: "", type: "ICE 3 Neo", stops: ["Luik-Guillemins", "Aachen Hbf", "Köln Hbf", "Frankfurt Hbf"], w: ['1','1','1','Bistro','2','2','2','2','2','2'] },
+            { tr: "EST 9145", t: "18:15", d: "London St-Pancras", p: "1", s: "", type: "EUROSTAR", stops: ["Lille-Europe", "London"], w: ['1','1','1','Bistro','2','2','2','2','2','2','2','2','2','2'] },
+            { tr: "IC 2034", t: "18:25", d: "Charleroi-Centraal", p: "12", s: "+10'", type: "IC", stops: ["Mechelen", "Brussel-Zuid", "Charleroi"], w: ['2','2','2','1','1','2','2','2'] },
+            { tr: "S32 2568", t: "18:35", d: "Essen", p: "24", s: "", type: "S-Trein", stops: ["Ekeren", "Kapellen", "Kalmthout", "Essen"], w: ['2','2','1','2'] },
+            { tr: "TGV 9876", t: "18:50", d: "Marseille", p: "21", s: "", type: "TGV Duplex", stops: ["Brussel-Zuid", "Lyon", "Marseille"], w: ['1','1','1','Bistro','2','2','2','2','2','2'] },
+            { tr: "IC 1530", t: "19:05", d: "Genk", p: "14", s: "", type: "IC", stops: ["Lier", "Aarschot", "Hasselt", "Genk"], w: ['2','2','1','2','2','2'] },
+            { tr: "L 5678", t: "19:15", d: "Hamont", p: "7", s: "", type: "L-Trein", stops: ["Herentals", "Mol", "Lommel", "Hamont"], w: ['2','2','2'] }
+        ];
+
+        function setLang(l) {
+            currentLang = l;
+            document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.innerText.toLowerCase() === l));
+            updateUI();
+        }
+
+        function updateUI() {
+            const d = dict[currentLang];
+            document.getElementById('txt-station-label').innerText = d.station;
+            document.getElementById('txt-plan').innerText = d.plan;
+            document.getElementById('txt-dep').innerText = d.dep;
+            document.getElementById('txt-plat').innerText = d.plat;
+            document.getElementById('txt-plan-h').innerText = d.searchH;
+            document.getElementById('planner-input').placeholder = d.searchPlaceholder;
+        }
+
+        function nav(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen-' + id).classList.add('active');
+            navHistory.push(id);
+            if(id === 'departures') renderDep();
+            if(id === 'platforms') renderPlat();
+        }
+
+        function back() {
+            if(navHistory.length > 1) {
+                navHistory.pop();
+                const prev = navHistory[navHistory.length - 1];
+                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                document.getElementById('screen-' + prev).classList.add('active');
+            }
+        }
+
+        function createCard(t) {
+            const div = document.createElement('div');
+            div.className = `train-item ${t.s ? 'delay' : ''}`;
+            div.onclick = () => { activeTrain = t; openBooking(t); };
+            
+            const stopsString = t.stops.join(' • ');
+
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between;"><span class="time">${t.t}</span><span class="platform-badge">${t.p}</span></div>
+                <div class="destination">${t.d}</div>
+                <div class="stops-mini">${stopsString}</div>
+                <div style="display:flex; justify-content:space-between; font-size:0.85rem; font-weight:bold;">
+                    <span style="opacity:0.7">${t.type} ${t.tr}</span>
+                    <span style="color:${t.s?'var(--red)':'var(--green)'};">${t.s || dict[currentLang].ontime}</span>
+                </div>`;
+            return div;
+        }
+
+        function openBooking(t) {
+            document.getElementById('book-train-info').innerText = `Antwerpen ➔ ${t.d}`;
+            document.getElementById('book-route-info').innerText = `${t.t} • ${t.type} ${t.tr}`;
+            nav('booking');
+        }
+
+        function selectTicket(el) {
+            document.querySelectorAll('.ticket-option').forEach(o => o.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function confirmBooking() {
+            document.getElementById('final-ticket-info').innerText = `${activeTrain.t} | Spoor ${activeTrain.p}\n${activeTrain.type} ${activeTrain.tr}`;
+            document.getElementById('det-wagons').innerHTML = activeTrain.w.map(w => `
+                <div class="wagon ${w==='1'?'first':''} ${w==='Bistro'?'bistro':''}">
+                    <span style="font-size:0.7rem; font-weight:bold;">${w==='Bistro'?'🍴':w==='Bike'?'🚲':w+'e'}</span>
+                    <div class="occ-bar"><div style="height:100%; width:${Math.random()*60+20}%; background:var(--green)"></div></div>
+                </div>
+            `).join('');
+            nav('ticket');
+        }
+
+        function renderDep() {
+            const l = document.getElementById('dep-list'); l.innerHTML = '';
+            trains.sort((a,b) => a.t.localeCompare(b.t)).forEach(t => l.appendChild(createCard(t)));
+        }
+
+        function renderPlat() {
+            const g = document.getElementById('plat-grid'); g.innerHTML = '';
+            for(let i=1; i<=24; i++) {
+                const count = trains.filter(t => t.p == i).length;
+                const d = document.createElement('div');
+                d.className = 'platform-box';
+                d.onclick = () => {
+                    document.getElementById('plat-title').innerText = `Spoor ${i}`;
+                    const list = document.getElementById('plat-trains'); list.innerHTML = '';
+                    trains.filter(t => t.p == i).forEach(ft => list.appendChild(createCard(ft)));
+                    nav('plat-detail');
+                };
+                d.innerHTML = `<h3 style="margin:0; color:var(--accent); font-size:1.6rem;">${i}</h3><small style="opacity:0.5;">${count} ritten</small>`;
+                g.appendChild(d);
+            }
+        }
+
+        function search() {
+            const q = document.getElementById('planner-input').value.toLowerCase();
+            const r = document.getElementById('planner-results'); r.innerHTML = '';
+            if(q.length < 2) return;
+            trains.filter(t => t.d.toLowerCase().includes(q) || t.stops.some(s => s.toLowerCase().includes(q)))
+                  .forEach(t => r.appendChild(createCard(t)));
+        }
+
+        setInterval(() => {
+            document.getElementById('clock').innerText = new Date().toLocaleTimeString('nl-BE');
+        }, 1000);
+        
+        updateUI();
+    </script>
+</body>
+</html>

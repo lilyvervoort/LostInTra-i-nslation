@@ -1,0 +1,423 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lost In Tra(i)nslation — Interactieve documentatie</title>
+<style>
+:root{
+  --bg: #0D1B2A;
+  --text: #F5F5F5;
+  --accent: #E65A27;
+  --accent-dark: #FF8C42;
+  --radius: 12px;
+  font-family: "Courier New", Courier, monospace;
+}
+
+/* BODY */
+body{
+  margin:0;
+  padding:24px;
+  background:linear-gradient(180deg,#0D1B2A 0%,#112D4E 100%);
+  color:var(--text);
+  line-height:1.45;
+  overflow-x:hidden;
+  position:relative;
+}
+
+/* TRAIN ANIMATION */
+.train {
+  position:absolute;
+  top:50%;
+  left:-80px;
+  width:60px;
+  height:12px;
+  background:var(--accent);
+  border-radius:6px;
+  box-shadow:0 0 10px var(--accent), 0 0 20px var(--accent-dark);
+  animation: moveTrain 6s linear infinite;
+  z-index:0;
+}
+
+@keyframes moveTrain {
+  0% { left: -80px; }
+  100% { left: 100%; }
+}
+
+/* HEADERS */
+h1,h2{
+  margin:0 0 10px 0;
+  color:var(--text);
+  text-shadow: 0 0 4px var(--accent-dark);
+  position:relative;
+  z-index:1;
+}
+
+/* WEEKS GRID */
+.weeks{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:14px;
+  position:relative;
+  z-index:1;
+}
+
+/* WEEK CARD */
+.week-card{
+  background:#2B2B2B;
+  padding:14px;
+  border-radius:var(--radius);
+  cursor:pointer;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  border-top:4px solid var(--accent);
+  box-shadow:0 0 8px var(--accent);
+  transition: transform .2s ease, box-shadow .2s ease;
+  animation: flicker 2s infinite alternate;
+  position:relative;
+  z-index:1;
+}
+
+.week-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 0 20px var(--accent);
+}
+
+.week-number{
+  font-weight:700;
+  font-size:20px;
+  color:var(--accent-dark);
+  text-shadow:0 0 6px var(--accent-dark);
+}
+
+.week-meta{
+  font-size:13px;
+  margin-top:6px;
+  opacity:0.95;
+  color:var(--text);
+}
+
+/* WEEK CONTENT */
+.week-content{
+  margin-top:20px;
+  padding:14px;
+  background:#2B2B2B;
+  border-radius:var(--radius);
+  box-shadow:0 0 10px var(--accent);
+  white-space:pre-wrap;
+  color:var(--text);
+  text-shadow:0 0 2px var(--accent-dark);
+  opacity:0;
+  animation: fadeIn 0.8s forwards;
+  position:relative;
+  z-index:1;
+}
+
+/* BUTTONS (Back & PDF) */
+.back-btn, .pdf-btn {
+  display: inline-block;
+  text-decoration: none;
+  margin-bottom:14px;
+  padding:10px 20px;
+  border:0;
+  border-radius:10px;
+  background:var(--accent);
+  color:#0D1B2A;
+  cursor:pointer;
+  font-weight:600;
+  text-shadow:0 0 2px var(--accent-dark);
+  transition: all .3s ease;
+  position:relative;
+  z-index:1;
+  font-family: inherit;
+  text-align: center;
+}
+
+.back-btn:hover, .pdf-btn:hover {
+  box-shadow:0 0 15px var(--accent);
+  transform: scale(1.05);
+  background: var(--accent-dark);
+}
+
+.footer-container {
+  margin-top: 60px;
+  text-align: center;
+  padding: 20px;
+  border-top: 1px solid rgba(230, 90, 39, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+/* ANIMATIONS */
+@keyframes flicker{
+  0%,19%,21%,23%,25%,54%,56%,100%{
+    opacity:1;
+  }
+  20%,22%,24%,55%{
+    opacity:0.85;
+  }
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(8px);}
+  to{opacity:1;transform:translateY(0);}
+}
+</style>
+</head>
+<body>
+
+<div class="train"></div> <header>
+  <h1>Lost In Tra(i)nslation</h1>
+  <p>Welkom bij mijn project! Klik op een week om de details te bekijken.</p>
+</header>
+
+<main id="mainView">
+  <section id="weekOverview">
+    <h2>Weeksoverzicht</h2>
+    <div class="weeks" id="weeksGrid"></div>
+  </section>
+</main>
+
+<script>
+const weekContents = {
+1:{title:'Ontwerpen op papier', body:`-- Doel --
+Het doel van deze week was het ontwerpen van het stationsbord op papier voordat de eigenlijke HTML en CSS werden geschreven.
+
+-- Activiteiten --
+• Brainstorm over het uiterlijk en gevoel van het stationsbord (modern, helder).
+• Schetsen gemaakt van de indeling:
+  - Header met departures en treinicoon.
+  - Tabel met kolommen: Tijd, Trein, Bestemming, Perron, Status.
+  - Ik maakte veel ontwerpen om verschillende opties te zien; dit vond ik wat moeilijk omdat ik nog niet goed wist waar ik naartoe wilde.
+
+-- Motivatie & keuzes --
+• Tabelindeling: volgt de standaardindeling van stationsborden voor herkenbaarheid.
+• Vertalingen: toegevoegd om meertaligheid te tonen (Nederlands, Frans, Duits, Engels).
+
+-- Reflectie --
+Het papieren ontwerp hielp om:
+• Een duidelijk overzicht te krijgen van de gewenste structuur.
+• Al na te denken over verhoudingen en uitlijning.`},
+
+2:{title:'3 definitieve ontwerpen', body:`-- Doel --
+Het doel van deze week was om drie verschillende ontwerpen op papier te maken voor het stationsbord.
+
+-- Activiteiten --
+• Drie afzonderlijke ontwerpen op papier uitgewerkt, telkens met een eigen opbouw voor het einddoel.
+• Voor elk ontwerp nagedacht over de positie van de header, tabel met vertrektijden.
+
+-- Motivatie & keuzes --
+• Ik heb 3 ontwerpen gemaakt die voor mij het meest logisch leken qua opstelling en indeling van waar alles staat.
+• Ik heb nog vrije ruimte gelaten voor moest ik nog aanpassingen willen of extra dingen toevoegen.
+• Op dit moment in het proces was ik nog zeker dat ik groen en wit wilde gebruiken.
+
+-- Reflectie --
+Door drie écht concrete ontwerpen te maken kon ik beter beoordelen welke lay-out het meest logisch en duidelijk was. Het hielp om visueel te zien welke elementen belangrijk zijn voor de uiteindelijke digitale versie. Deze stap zorgde voor een sterke basis voor de volgende week, waarin de echte Figma-versie werd opgebouwd.`},
+
+3:{title:'Figma-document', body:`-- Doel --
+Het doel van deze week was om het gekozen ontwerp van de vorige week digitaal uit te werken in Figma. Hierdoor kon het stationsbord visueel en interactief worden voorbereid voordat we met HTML en CSS gingen werken.
+
+-- Activiteiten --
+• Een Figma-document aangemaakt met een canvas voor het stationsbord.
+• Het ontwerp van week 2 gedigitaliseerd, inclusief header, tabel met kolommen voor Tijd, Trein, Bestemming, Perron en Status.
+• Kleuren en lettertypen toegepast (witte achtergrond, groene header, zwart lettertype Arial).
+• Interne componenten aangemaakt, tabelrijen, zodat hergebruik eenvoudig was, dit kon ik gewoon kopiëren en plakken.
+
+-- Motivatie & keuzes --
+• Het digitaal maken in Figma maakt het eenvoudiger om later HTML en CSS na te maken en verbeteren qua design.
+• Door componenten te gebruiken kan elke tabelrij en header uniform worden toegepast.
+• De kleuren en typografie werden consistent gehouden om de leesbaarheid en uitstraling van het stationsbord te behouden.
+
+-- Reflectie --
+Het Figma-document gaf een duidelijk beeld van hoe het eindproduct eruit zou zien. Het digitaal ontwerp maakte het makkelijker om problemen in layout en uitlijning vroegtijdig te signaleren. De feedback van deze Figma file was dat het design beter moest omdat het heel simpel was, er zat geen flow in. Het is heel basic en het design werd daarom in de volgende week drastisch aangepast.`},
+
+4:{title:'START HTML & CSS', body:`-- Doel --
+Het doel van deze week was om te starten met het bouwen van de eerste digitale versie van het stationsbord met HTML en CSS met behulp van ChatGPT.
+
+-- Activiteiten --
+• Een eenvoudige HTML-structuur opgezet met een header, klok en tabel voor de vertrektijden.
+• Basis CSS toegepast om de layout en kleuren te definiëren, voornamelijk nog steeds een groen-wit kleurenschema.
+• Kolommen van de tabel ingericht voor Tijd, Trein, Bestemming, Perron en Status.
+• De header en de klok in de juiste positie geplaatst, maar nog zonder complexe styling of neon-effecten.
+• Testen gedaan in de browser om te controleren of de structuur correct wordt weergegeven, ik was vrij snel blij maar dit was niet terecht!.
+
+-- Motivatie & keuzes --
+• Het groene en witte kleurenpalet gekozen voor een duidelijk en eenvoudig startpunt, zodat focus lag op structuur en functionaliteit.
+• De tabelopmaak van de vertrektijden uniform gemaakt om hergebruik van rijen eenvoudiger te maken.
+
+-- Reflectie --
+Deze week was belangrijk om de basis te leggen van het project. Door te starten met een simpel ontwerp kon ik me volledig richten op het correct opbouwen van de HTML-structuur en de eerste CSS-styling. Dit vormde een stabiele basis voor de komende weken waarin het ontwerp verder werd uitgebreid en verfijnd.
+Na deze week heb ik beseft dat alles echt super basic was en dat ik me echt moest gaan focussen op wat ik echt visualiseer in mijn hoofd en zelf zou willen zien in een treinstation.`},
+
+5:{title:'HTML & CSS', body:`-- Doel --
+Mijn doel van deze week was om het stationsbord volledig uit te werken, inclusief stijl, kleuren, lettertypen en dynamische elementen.
+
+-- Activiteiten --
+• HTML-structuur verder uitgebreid met header, klok, tabellabels en tabelrijen.
+• CSS toegevoegd voor neon-effecten, kleuren, schaduwen en animaties.
+• Klok dynamisch gemaakt met JavaScript zodat de tijd realtime wordt weergegeven.
+• De tabelrijen dynamisch gevuld met vertrektijden en status via JavaScript.
+• Speciale styling toegevoegd voor geannuleerde ritten en vertragingen.
+• Toegankelijkheidsverbetering door rood kruisje toe te voegen bij geannuleerde ritten, zodat de status niet alleen via kleur wordt weergegeven.
+• Header en klok verticaal gecentreerd en het klokicoon naast de klok geplaatst voor betere visuele balans.
+• Vertalingen onder alle tabellabels consistent uitgelijnd voor leesbaarheid.
+
+-- Motivatie & keuzes --
+• Neonstijl gekozen om een visueel aantrekkelijke en herkenbare look te creëren.
+• Oranje accenten op donkere achtergrond gebruikt voor maximale zichtbaarheid en contrast.
+• JavaScript gebruikt om dynamische elementen zoals klok, statusupdates, verschuivende tussenstops te implementeren.
+• Alle kleine details (uitlijning, iconen, animaties) toegevoegd om de gebruikerservaring te verbeteren en het bord zo realistisch mogelijk te maken.
+
+-- Reflectie --
+Week 5 was de meest intensieve week waarin alle voorgaande stappen samenkwamen: het papieren ontwerp, Figma-document, en de basis-HTML en CSS. Door de neonstijl, dynamische klok en statusindicatoren heeft het stationsbord nu een professionele uitstraling. Deze week hielp om de html af te ronden en te zorgen dat alle technische en visuele aspecten goed geïntegreerd zijn.
+Ik heb in deze week 24 uur thuis bezig geweest aan het perfect maken van deze html en dat was echt super intensief, maar het gaf me wel voldoening toen het af was.`},
+
+6:{title:'Toetsweek', body:`Geen verdere vordering in opdracht vanwege toetsweek.`}
+};
+
+const moreWeeks = {
+7:{title:'Brugdag', body:`Tot op deze dag was ik al klaar met de opdrachten die we hadden, het was op dit moment afwachten tot iets nieuws.`},
+
+8:{title:'Weekdocumentatie + APP', body:`-- Doel --
+In deze week startte ik aan de weekdocumentatie en aan de nieuwe opdracht die we kregen om een applicatie te maken op basis van onze 3 treinborden.
+
+-- Activiteiten --
+• HTML van de weekdocumentatie geschreven + Lay-out goed gemaakt, inspiratie gezocht voor kleuren --> The Subway van artieste Chappell Roan.
+• Brainstormsessies gehouden voor de app-ideeën.`},
+
+9:{title:'Ontwerp applicatie bedenken', body:`-- Doel --
+Het doel van deze week was om een concreet concept te bedenken voor de applicatie die gebaseerd is op mijn drie treinborden. De focus lag op het vertalen van het bestaande visuele ontwerp naar een interactieve app-ervaring.
+
+-- Activiteiten --
+• Gebrainstormd over mogelijke functies van de applicatie.
+• Nagedacht over hoe de treinborden gebruikt kunnen worden binnen een app-context.
+• Inspiratie gezocht bij bestaande trein- en metro-apps.
+• Eerste ideeën geschetst op papier en in mijn hoofd uitgewerkt (navigatie, schermindeling, flow).
+• Bepaald welke elementen essentieel zijn om over te nemen uit het treinbord (kleurgebruik, typografie, statusmeldingen).
+
+-- Motivatie & keuzes --
+• Gekozen om het ontwerp van de app visueel te laten aansuiten bij het treinbord, zodat er één duijke en herkenbare stijl ontstaat.
+• De focus gelegd op overzicht en duidelijkheid, net zoals bij echte stationsborden.
+• Functionaliteit belangrijker gemaakt dan complexiteit, zodat de app logisch en gebruiksvriendelijk blijft.
+
+-- Reflectie --
+Deze week hielp om het project in een nieuwe context te plaatsen. Door het treinbord te vertalen naar een applicatie moest ik anders nadenken over interactie, gebruik en flow. Het bedenken van het app-ontwerp zorgde voor een duidelijke richting voor de volgende weken, waarin het concept verder uitgewerkt en visueel verfijnd kon worden.`},
+
+10:{title:'Start HTML applicatie', body:`-- Doel --
+Het doel van deze week was om te starten met de HTML-structuur van de applicatie en tegelijkertijd de weekdocumentatie verder aan te vullen en te verfijnen.
+
+-- Activiteiten --
+• Gestart met het opzetten van de basis HTML-structuur van de applicatie.
+• Eerste lay-out opgebouwd op basis van het eerder bedachte app-ontwerp.
+• Nagedacht over de navigatie en schermopbouw binnen de applicatie.
+• Kleine CSS-aanpassingen gedaan om de visuele stijl te laten aansuiten bij het treinbord.
+• De weekdocumentatie verder uitgewerkt en aangevuld met recente weken.
+• Teksten herlezen en aangepast voor duidelijkheid en consistentie.
+
+-- Motivatie & keuzes --
+• Gekozen om eerst een eenvoudige HTML-structuur te bouwen zodat de focus lag op functionaliteit and flow.
+• De stijl van de applicatie bewust afgestemd op het treinbord om één visueel geheel te creëren.
+• De weekdocumentatie parallel blijven updaten om het ontwerpproces duidelijk te blijven documenteren.
+
+-- Reflectie --
+Door deze week al te starten met de HTML van de applicatie werd het concept concreter en tastbaarder. Het verder uitwerken van de weekdocumentatie zorgde ervoor dat het volledige proces overzichtelijk bleef. Deze combinatie van bouwen en documenteren hielp om gerichter verder te werken in de volgende weken.`},
+
+11:{title:'Verfijning & documentatie', body:`-- Doel --
+Het doel van deze week was om zowel de applicatie als de weekdocumentatie volledig te verfijnen en alles zo logisch, consistent en afgewerkt mogelijk te maken.
+
+-- Activiteiten --
+• De HTML- en CSS-code van de applicatie grondig nagekeken en opgeschoond.
+• Layout, uitlijning en spacing verfijnd voor een overzichtelijke en logische structuur.
+• Visuele details aangepast zodat alles consistent aanvoelt (kleuren, typografie, accenten).
+• Navigatie en flow van de applicatie gecontroleerd en verbeterd waar nodig.
+• Kleine fouten en onduidelijkheden opgespoord en gecorrigeerd.
+• De volledige weekdocumentatie omgezet naar een Word-document.
+• Foto’s en screenshots toegevoegd ter ondersteuning van het proces en het eindresultaat.
+• Teksten herwerkt zodat het verloop van het project duidelijk en chronologisch is.
+
+-- Motivatie & keuzes --
+• Gekozen om deze week volledig te focussen op afwerking in plaats van nieuwe functies toe te voegen.
+• Logica en gebruiksvriendelijkheid vooropgesteld zodat de applicatie intuïtief aanvoelt.
+• De documentatie in Word geplaatst om alles overzichtelijk en professioneel te kunnen presenteren.
+
+-- Reflectie --
+Deze week voelde als het samenbrengen van het volledige project. Door alles tot in detail te verfijnen kreeg zowel de applicatie als de documentatie een afgewerkte en professionele uitstraling. Het omzetten van de weekdocumentatie naar Word met ondersteunende beelden maakte het proces en de evolutie van het project duidelijk en coherent.`},
+
+12:{title:'Eindreflectie & indiening', body:`-- Doel --
+Het doel van deze week was om het volledige project af te ronden, een eindreflectie te schrijven en alle onderdelen correct in te dienen.
+
+-- Activiteiten --
+• Laatste controles uitgevoerd op de applicatie en de HTML-bestanden.
+• De volledige weekdocumentatie nagelezen en kleine tekstuele aanpassingen gedaan.
+• Gecontroleerd of alle screenshots, beelden en uitleg duidelijk en volledig waren.
+• Alle bestanden correct verzameld en ingediend volgens de richtlijnen.
+• Teruggeblikt op het volledige ontwerpproces van begin tot einde.
+
+-- Motivatie & keuzes --
+• Gekozen om geen grote aanpassingen meer te doen om de stabiliteit van het eindresultaat te behouden.
+• Focus gelegd op duidelijkheid en volledigheid bij de indiening.
+• De eindreflectie gebruikt om bewust stil te staan bij het leerproces en de evolutie van het project.
+
+-- Reflectie --
+Dit project toonde duidelijk hoe een idee evolueert van schetsen op papier tot een uitgewerkte digitale applicatie. Door verschillende iteraties, feedbackmomenten en verfijningen heb ik niet alleen technische vaardigheden in HTML, CSS en JavaScript ontwikkeld, maar ook sterker leren nadenken over design, structuur en gebruiksvriendelijkheid. De combinatie van visueel ontwerp, interactie en documentatie zorgde voor een volledig en samenhangend eindresultaat waar ik tevreden over ben.`}
+};
+
+const weeksGrid=document.getElementById('weeksGrid');
+const mainView=document.getElementById('mainView');
+
+// Render weeks 1 to 6
+for(let i=1;i<=6;i++){
+  const card=document.createElement('div');
+  card.className='week-card';
+  card.innerHTML=`<div class="week-number">Week ${i}</div><div class="week-meta">${weekContents[i].title}</div>`;
+
+  card.addEventListener('click',()=>{
+    renderDetailView(i, weekContents[i]);
+  });
+  weeksGrid.appendChild(card);
+}
+
+// Render weeks 7 to 12
+for(let i=7;i<=12;i++){
+  const card=document.createElement('div');
+  card.className='week-card';
+  card.innerHTML=`<div class="week-number">Week ${i}</div><div class="week-meta">${moreWeeks[i].title}</div>`;
+
+  card.addEventListener('click',()=>{
+    renderDetailView(i, moreWeeks[i]);
+  });
+  weeksGrid.appendChild(card);
+}
+
+function renderDetailView(num, data) {
+    mainView.innerHTML='';
+    const backBtn=document.createElement('button');
+    backBtn.className='back-btn';
+    backBtn.textContent='Terug naar overzicht';
+    backBtn.addEventListener('click',()=>location.reload());
+
+    const h1=document.createElement('h1');
+    h1.textContent=`Week ${num} — ${data.title}`;
+
+    const contentDiv=document.createElement('div');
+    contentDiv.className='week-content';
+    contentDiv.textContent=data.body;
+    contentDiv.style.display='block';
+
+    mainView.appendChild(backBtn);
+    mainView.appendChild(h1);
+    mainView.appendChild(contentDiv);
+}
+</script>
+
+<footer class="footer-container">
+  <img src="assets/info/images/schermafbeelding.png" alt="Footer afbeelding" style="max-width:100%;height:auto;margin-bottom:20px;">
+  <br>
+  <a href="assets/info/ontwerpdocumentatie.pdf" target="_blank" class="pdf-btn">
+    Bekijk de volledige ontwerpdocumentatie (PDF)
+  </a>
+</footer>
+
+</body>
+</html>
